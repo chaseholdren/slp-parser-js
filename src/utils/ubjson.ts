@@ -1,14 +1,12 @@
-// @flow
-
 const valueMarkers = {
-  object: "{".charCodeAt(0),
-  string: "S".charCodeAt(0),
-  uint8: "U".charCodeAt(0),
-  int32: "l".charCodeAt(0),
+  object: '{'.charCodeAt(0),
+  string: 'S'.charCodeAt(0),
+  uint8: 'U'.charCodeAt(0),
+  int32: 'l'.charCodeAt(0),
 };
 
 const terminationMarkers = {
-  object: "}".charCodeAt(0)
+  object: '}'.charCodeAt(0),
 };
 
 class UbjsonDecoder {
@@ -23,12 +21,10 @@ class UbjsonDecoder {
     this.dataView = new DataView(buffer.buffer);
   }
 
-  readObject() {
-    const shouldContinueRead = () => (
-      this.buffer[this.position] !== terminationMarkers.object
-    );
+  readObject = () => {
+    const shouldContinueRead = () => this.buffer[this.position] !== terminationMarkers.object;
 
-    const object = {};
+    const object: {[key: string]: any} = {};
     while (shouldContinueRead()) {
       const field = this.readString();
       object[field] = this.readValueAtPosition();
@@ -40,11 +36,11 @@ class UbjsonDecoder {
     return object;
   }
 
-  readString() {
+  readString = () => {
     // First we need to read the string length
-    const length: number = this.readValueAtPosition();
+    const length: number = this.readValueAtPosition() as number;
     if (!Number.isInteger(length)) {
-      throw new Error("UBJSON decoder - failed to read string length");
+      throw new Error('UBJSON decoder - failed to read string length');
     }
 
     // Grab current position and update
@@ -53,10 +49,10 @@ class UbjsonDecoder {
 
     // Read string
     const stringBuffer = this.buffer.slice(pos, pos + length);
-    return String.fromCharCode.apply(null, stringBuffer);
+    return String.fromCharCode.apply(null, stringBuffer as unknown as number[]);
   }
 
-  readUint8() {
+  readUint8 = () => {
     // Grab current position and update
     const pos = this.position;
     this.position += 1;
@@ -65,7 +61,7 @@ class UbjsonDecoder {
     return this.dataView.getUint8(pos);
   }
 
-  readInt32() {
+  readInt32 = () => {
     // Grab current position and update
     const pos = this.position;
     this.position += 4;
@@ -74,32 +70,30 @@ class UbjsonDecoder {
     return this.dataView.getInt32(pos);
   }
 
-  readValueAtPosition(): * {
+  readValueAtPosition = () => {
     const valueMarker = this.buffer[this.position];
 
     // Move position forward by 1
     this.position += 1;
 
     switch (valueMarker) {
-    case valueMarkers.object:
-      return this.readObject();
-    case valueMarkers.string:
-      return this.readString();
-    case valueMarkers.uint8:
-      return this.readUint8();
-    case valueMarkers.int32:
-      return this.readInt32();
-    default:
-      throw new Error(
-        `UBJSON decoder - value type with marker ${valueMarker} is not supported yet. ` +
-        `Position: ${this.position - 1}.`
-      );
+      case valueMarkers.object:
+        return this.readObject();
+      case valueMarkers.string:
+        return this.readString();
+      case valueMarkers.uint8:
+        return this.readUint8();
+      case valueMarkers.int32:
+        return this.readInt32();
+      default:
+        throw new Error(
+          `UBJSON decoder - value type with marker ${valueMarker} is not supported yet. ` +
+            `Position: ${this.position - 1}.`,
+        );
     }
   }
 
-  decode() {
-    return this.readValueAtPosition();
-  }
+  decode = () => this.readValueAtPosition();
 }
 
 export function decode(buffer: Uint8Array) {

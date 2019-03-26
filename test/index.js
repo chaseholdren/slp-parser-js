@@ -1,8 +1,7 @@
-import _ from 'lodash';
-import SlippiGame from '../src';
+import { getSlippiGameDataFromBuffer } from '../src/index';
 
-test('read settings', () => {
-  const game = new SlippiGame("test/sheik_vs_ics_yoshis.slp");
+test('read settings', async () => {
+  const game = getSlippiGameDataFromBuffer();
   const settings = game.getSettings();
   expect(settings.stageId).toBe(8);
   expect(_.first(settings.players).characterId).toBe(0x13);
